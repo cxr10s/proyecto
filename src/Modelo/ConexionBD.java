@@ -20,9 +20,9 @@ public class ConexionBD {
      private static ConexionBD instancia;
     private Connection connection = null;
     
-    private final String url = "jdbc:oracle:thin:@loaclhost:1521:XE";   // Oracle 10g XE: formato SID
-    private final String user = "ronaldo";
-    private final String password = "ronaldo";
+    private final String url = "jdbc:oracle:thin:@192.168.254.215:1521:orcl";   // Oracle 10g XE: formato SID
+    private final String user = "proyectointcrud";
+    private final String password = "proyectointcrud";
 
     // Constructor privado para Singleton
     private ConexionBD() {
