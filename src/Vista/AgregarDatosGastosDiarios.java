@@ -1,0 +1,600 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ */
+package Vista;
+
+import Modelo.GastoDiario;
+import Modelo.GastoDiarioDAO;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import javax.swing.JOptionPane;
+
+/**
+ *
+ * @author ASUS
+ */
+public class AgregarDatosGastosDiarios extends javax.swing.JFrame {
+    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(AgregarDatosGastosDiarios.class.getName());
+
+    /**
+     * Creates new form AgregarDatosGstosDiarios
+     */
+    // ids de la base de datos, EN EL MISMO ORDEN de los items de cada combo
+    private static final String[] ID_MEDIDA = {"1", "2", "3", "4", "5", "6", "7", "8"};
+    private static final String[] ID_FORMA = {"1", "2", "3", "4", "5", "6", "7"};
+    private static final String[] ID_LUGAR = {"1", "4", "6", "7", "10", "13", "14", "16", "17",
+        "18", "19", "20", "21", "22", "23", "24", "25"};
+    private static final String[] ID_FRECUENCIA = {"1", "2", "3", "4", "5", "6", "7", "9"};
+
+    private final GastosDiarios padre;          // ventana de la lista (puede ser null)
+    private final String idHogar;               // hogar al que pertenece el gasto
+    private final String numOrdenEditar;        // null = agregar; con valor = modificar ese gasto
+    private final GastoDiarioDAO dao = new GastoDiarioDAO();
+
+    public AgregarDatosGastosDiarios() {
+        this(null, null, null);
+    }
+
+    public AgregarDatosGastosDiarios(GastosDiarios padre, String idHogar, String numOrdenEditar) {
+        this.padre = padre;
+        this.idHogar = idHogar;
+        this.numOrdenEditar = numOrdenEditar;
+        initComponents();
+        
+        // Inicialmente, las cajas de texto están deshabilitadas.
+    TxfUnidad_Medida.setEnabled(false);
+    TxfForma_adq.setEnabled(false);
+
+    // Detecta los cambios de selección en los ComboBox.
+    CobUnidad_medida.addActionListener(e -> {
+        boolean esOtra = "otra".equalsIgnoreCase(
+            CobUnidad_medida.getSelectedItem().toString().trim()
+        );
+
+        TxfUnidad_Medida.setEnabled(esOtra);
+
+        if (!esOtra) {
+            TxfUnidad_Medida.setText("");
+        }
+    });
+
+    CobForma_adq.addActionListener(e -> {
+        boolean esOtra = "Otra".equalsIgnoreCase(
+            CobForma_adq.getSelectedItem().toString().trim()
+        );
+
+        TxfForma_adq.setEnabled(esOtra);
+
+        if (!esOtra) {
+            TxfForma_adq.setText("");
+        }
+    });
+    
+    // Configura el precio: mínimo $0, máximo $1.000.000.000.
+    SpiValor_Compra.setModel(
+        new javax.swing.SpinnerNumberModel(
+            0,          // Valor inicial
+            0,          // Valor mínimo permitido
+            null, // Valor máximo permitido
+            10000         // Incremento al usar las flechas
+        )
+    );
+    // Mostrar el signo de pesos y separadores de miles.
+    SpiValor_Compra.setEditor(
+    new javax.swing.JSpinner.NumberEditor(
+        SpiValor_Compra, "$ #,##0"
+    )
+    );
+
+    // Mantiene habilitado el campo del precio.
+    SpiValor_Compra.setEnabled(true);
+    
+    // Agrupa los botones para permitir una sola selección.
+    javax.swing.ButtonGroup grupoTipoGasto =
+            new javax.swing.ButtonGroup();
+
+    grupoTipoGasto.add(RdbHogar); // Del Hogar
+    grupoTipoGasto.add(RdbPersonal); // Personal
+
+    // Inicialmente, las cajas de texto están deshabilitadas.
+    TxfUnidad_Medida.setEnabled(false);
+    TxfForma_adq.setEnabled(false);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setTitle((numOrdenEditar == null ? "Agregar gasto diario" : "Modificar gasto " + numOrdenEditar)
+                + (idHogar == null ? "" : " - Hogar " + idHogar));
+
+        BtnGuardar.addActionListener(e -> guardar());   // GUARDAR
+        BtnCancelar.addActionListener(e -> dispose());   // CANCELAR
+        BtnVolver.addActionListener(e -> dispose());   // VOLVER
+
+        // Al cerrar (CANCELAR, VOLVER, GUARDAR o la X) se refresca la lista y se vuelve a mostrar
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                if (AgregarDatosGastosDiarios.this.padre != null) {
+                    AgregarDatosGastosDiarios.this.padre.cargarTabla();
+                    AgregarDatosGastosDiarios.this.padre.setVisible(true);
+                }
+            }
+        });
+
+        if (numOrdenEditar != null) {
+            cargarDatos();
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jLabel1 = new javax.swing.JLabel();
+        TxfNombre_articulo = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        DapFecha = new com.github.lgooddatepicker.components.DatePicker();
+        jLabel3 = new javax.swing.JLabel();
+        SpiCantidad = new javax.swing.JSpinner();
+        jLabel4 = new javax.swing.JLabel();
+        CobUnidad_medida = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
+        TxfEquivalencia = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        CobForma_adq = new javax.swing.JComboBox<>();
+        jLabel7 = new javax.swing.JLabel();
+        CobLugar_Compra = new javax.swing.JComboBox<>();
+        jLabel8 = new javax.swing.JLabel();
+        SpiValor_Compra = new javax.swing.JSpinner();
+        jLabel9 = new javax.swing.JLabel();
+        CobFrecuencia = new javax.swing.JComboBox<>();
+        jLabel10 = new javax.swing.JLabel();
+        RdbHogar = new javax.swing.JRadioButton();
+        RdbPersonal = new javax.swing.JRadioButton();
+        BtnGuardar = new javax.swing.JButton();
+        BtnCancelar = new javax.swing.JButton();
+        TxfForma_adq = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        TxfUnidad_Medida = new javax.swing.JTextField();
+        BtnVolver = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Agregar gastos diarios");
+
+        jLabel1.setText("Nombre del articulo o servicio :");
+        jLabel1.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel2.setText("Fecha :");
+        jLabel2.setFont(new java.awt.Font("Times New Roman", 0, 16)); // NOI18N
+
+        jLabel3.setText("Cantidad adquirida :");
+        jLabel3.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        SpiCantidad.setModel(new javax.swing.SpinnerNumberModel(0, 0, 100, 1));
+
+        jLabel4.setText("Unidad medida :");
+        jLabel4.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        CobUnidad_medida.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Centimetros cubicos", "Litro", "Gramos", "Onzas", "Libra", "Kilo", "Arroba", "Otra" }));
+        CobUnidad_medida.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel5.setText("Equivalencia en la unidad de medida seleccionada :");
+        jLabel5.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel6.setText("Lugar  de compra del articulo o obtencion del servicio :");
+        jLabel6.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        CobForma_adq.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Compra", "Recibos como pago por trabajo", "Reglao o donacion", "Intercambio o trueque", "Traidos de finca o producidos por el hogar", "Tomados de un negocio del hogar", "Otra" }));
+        CobForma_adq.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel7.setText("Forma de adquisicion :");
+        jLabel7.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        CobLugar_Compra.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Almacenes, supermercado de cadena, tiendas pord epartamento o hipermercados", "Supermercados de cajas de compensanción, cooperativas, fondos de empleados y comisariatos", "Supermercado de barrio, tiendas de barrio, cigarrerías, salsamentarias y delicatessen", "Misceláneas de barrio y cacharrerías", "Plazas de mercado, galerías, mercados móviles, central mayorista de abastecimiento y graneros", "Vendedores ambulantes", "Sanandresitos, bodegas y fábricas", "Establecimiento especializado en la venta del artículo o la prestación del servicio", "Farmacias y droguerías", "Restaurantes", "Cafeterías y establecimientos de comidas rápidas", "Persona particular", "Ferias especializadas: artesanal, del libro, del hogar, de tecnología, etc.", "A través de internet", "Televentas y ventas por catálogo", "Otro", "Plazoleta de comidas" }));
+        CobLugar_Compra.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel8.setText("¿Cuánto pagó o cuánto tendría que pagar si tuviera que comprarlo? :");
+        jLabel8.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel9.setText("Frecuencia de compra :");
+        jLabel9.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        CobFrecuencia.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Diario ", "Varias veces por semana ", "Semanal ", "Quincenal ", "Mensual", "Bimestral", "Trimestral", "Esporádica" }));
+        CobFrecuencia.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel10.setText("Tipo de gasto :");
+        jLabel10.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        RdbHogar.setText("Del Hogar");
+        RdbHogar.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+
+        RdbPersonal.setText("Personal");
+        RdbPersonal.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+
+        BtnGuardar.setText("GUARDAR");
+        BtnGuardar.setBackground(new java.awt.Color(51, 255, 51));
+        BtnGuardar.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+
+        BtnCancelar.setText("CANCELAR");
+        BtnCancelar.setBackground(new java.awt.Color(255, 51, 51));
+        BtnCancelar.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/dane (2).png"))); // NOI18N
+
+        jLabel12.setText("MATEO ALEJANDRO RODRÍGUEZ MARTÍNEZ");
+        jLabel12.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel13.setText("1015162895");
+        jLabel13.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel14.setText("ENCUESTADOR");
+        jLabel14.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+
+        jLabel15.setText("Gastos diarios");
+        jLabel15.setFont(new java.awt.Font("Times New Roman", 0, 36)); // NOI18N
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel12, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel13, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel14, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(22, 22, 22))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel15))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(jLabel12)
+                        .addGap(17, 17, 17)
+                        .addComponent(jLabel13)
+                        .addGap(22, 22, 22)
+                        .addComponent(jLabel14)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        TxfUnidad_Medida.setToolTipText("");
+
+        BtnVolver.setText("VOLVER");
+        BtnVolver.setBackground(new java.awt.Color(0, 153, 255));
+        BtnVolver.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(40, 40, 40)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(BtnVolver)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(BtnGuardar)
+                        .addGap(43, 43, 43)
+                        .addComponent(BtnCancelar)
+                        .addGap(49, 49, 49))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(198, 198, 198)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(RdbPersonal, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RdbHogar, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addGap(64, 64, 64)
+                                .addComponent(CobForma_adq, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(76, 76, 76)
+                                .addComponent(TxfForma_adq, javax.swing.GroupLayout.PREFERRED_SIZE, 249, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(TxfEquivalencia, javax.swing.GroupLayout.PREFERRED_SIZE, 318, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel6)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel9)
+                                .addGap(64, 64, 64)
+                                .addComponent(CobFrecuencia, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(SpiValor_Compra, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(399, 399, 399)
+                                .addComponent(CobLugar_Compra, javax.swing.GroupLayout.PREFERRED_SIZE, 624, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(DapFecha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(SpiCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(TxfNombre_articulo, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(12, 12, 12)
+                                .addComponent(CobUnidad_medida, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(28, 28, 28)
+                                .addComponent(TxfUnidad_Medida, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(447, Short.MAX_VALUE))))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(DapFecha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(36, 36, 36)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(TxfNombre_articulo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(SpiCantidad, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(CobUnidad_medida, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(TxfUnidad_Medida, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(26, 26, 26)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(TxfEquivalencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(26, 26, 26)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(CobForma_adq, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7)
+                    .addComponent(TxfForma_adq, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(31, 31, 31)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(CobLugar_Compra, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(39, 39, 39)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(SpiValor_Compra, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(29, 29, 29)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(CobFrecuencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(33, 33, 33)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(RdbHogar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(RdbPersonal)
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(BtnVolver)
+                    .addComponent(BtnGuardar)
+                    .addComponent(BtnCancelar)))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    /** Llena el formulario con los datos del gasto (modo modificar). */
+    private void cargarDatos() {
+        try {
+            GastoDiario g = dao.buscar(idHogar, Integer.parseInt(numOrdenEditar));
+            if (g == null) {
+                JOptionPane.showMessageDialog(this, "No se encontró el gasto " + numOrdenEditar + ".",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                javax.swing.SwingUtilities.invokeLater(this::dispose);
+                return;
+            }
+            DapFecha.setDate(g.getFecha());
+            TxfNombre_articulo.setText(g.getNombreArticulo());
+            SpiCantidad.setValue(g.getCantidad());
+            CobUnidad_medida.setSelectedIndex(indiceDe(ID_MEDIDA, g.getIdMedida()));
+            TxfEquivalencia.setText(g.getEquivalencia());
+            CobForma_adq.setSelectedIndex(indiceDe(ID_FORMA, g.getIdFormaAdquisicion()));
+            CobLugar_Compra.setSelectedIndex(indiceDe(ID_LUGAR, g.getIdLugarCompra()));
+            SpiValor_Compra.setValue(g.getCosto());
+            CobFrecuencia.setSelectedIndex(indiceDe(ID_FRECUENCIA, g.getIdFrecuencia()));
+            RdbHogar.setSelected("1".equals(g.getTipoGasto()));
+            RdbPersonal.setSelected("2".equals(g.getTipoGasto()));
+        } catch (SQLException | NumberFormatException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "No se pudo cargar el gasto:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            javax.swing.SwingUtilities.invokeLater(this::dispose);
+        }
+    }
+
+    /** Valida y guarda (agrega o modifica según el modo). */
+    private void guardar() {
+        if (idHogar == null) {
+            JOptionPane.showMessageDialog(this, "Abra esta ventana desde un hogar.",
+                    "Guardar", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        try {
+            SpiCantidad.commitEdit();     // por si escribió el número y no presionó Enter
+            SpiValor_Compra.commitEdit();
+        } catch (java.text.ParseException ex) {
+            JOptionPane.showMessageDialog(this, "Revise la cantidad y el valor pagado.",
+                    "Datos incorrectos", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        LocalDate fecha = DapFecha.getDate();
+        String nombre = TxfNombre_articulo.getText().trim();
+        int cantidad = ((Number) SpiCantidad.getValue()).intValue();
+        String equivalencia = TxfEquivalencia.getText().trim();
+        long costo = ((Number) SpiValor_Compra.getValue()).longValue();
+
+        if (fecha == null || nombre.isEmpty() || equivalencia.isEmpty()
+                || (!RdbHogar.isSelected() && !RdbPersonal.isSelected())) {
+            JOptionPane.showMessageDialog(this,
+                    "Complete la fecha, el nombre, la equivalencia y el tipo de gasto.",
+                    "Datos incompletos", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (cantidad <= 0) {
+            JOptionPane.showMessageDialog(this, "La cantidad adquirida debe ser mayor que 0.",
+                    "Datos incorrectos", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (costo <= 0) {
+            JOptionPane.showMessageDialog(this, "Indique cuánto pagó o tendría que pagar (mayor que 0).",
+                    "Datos incorrectos", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (nombre.length() > 100 || equivalencia.length() > 50) {
+            JOptionPane.showMessageDialog(this,
+                    "El nombre admite máximo 100 caracteres y la equivalencia 50.",
+                    "Texto muy largo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String idMedida = idDe(ID_MEDIDA, CobUnidad_medida.getSelectedIndex());
+        String idForma = idDe(ID_FORMA, CobForma_adq.getSelectedIndex());
+        String idLugar = idDe(ID_LUGAR, CobLugar_Compra.getSelectedIndex());
+        String idFrecuencia = idDe(ID_FRECUENCIA, CobFrecuencia.getSelectedIndex());
+        if (idMedida == null || idForma == null || idLugar == null || idFrecuencia == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Una de las listas no coincide con los códigos de la base de datos.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        GastoDiario g = new GastoDiario();
+        g.setIdHogar(idHogar);
+        g.setFecha(fecha);
+        g.setNombreArticulo(nombre);
+        g.setCantidad(cantidad);
+        g.setIdMedida(idMedida);
+        g.setEquivalencia(equivalencia);
+        g.setIdFormaAdquisicion(idForma);
+        g.setIdLugarCompra(idLugar);
+        g.setCosto(costo);
+        g.setIdFrecuencia(idFrecuencia);
+        g.setTipoGasto(RdbHogar.isSelected() ? "1" : "2");
+
+        try {
+            if (numOrdenEditar == null) {
+                dao.agregar(g);
+                JOptionPane.showMessageDialog(this, "Gasto " + g.getNumOrden() + " guardado correctamente.");
+            } else {
+                g.setNumOrden(Integer.parseInt(numOrdenEditar));
+                dao.modificar(g);
+                JOptionPane.showMessageDialog(this, "Gasto " + numOrdenEditar + " modificado correctamente.");
+            }
+            dispose();   // windowClosed refresca la lista y la muestra
+        } catch (SQLException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "No se pudo guardar:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static String idDe(String[] ids, int indice) {
+        return (indice >= 0 && indice < ids.length) ? ids[indice] : null;
+    }
+
+    private static int indiceDe(String[] ids, String id) {
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i].equals(id)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> new AgregarDatosGastosDiarios().setVisible(true));
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton BtnCancelar;
+    private javax.swing.JButton BtnGuardar;
+    private javax.swing.JButton BtnVolver;
+    private javax.swing.JComboBox<String> CobForma_adq;
+    private javax.swing.JComboBox<String> CobFrecuencia;
+    private javax.swing.JComboBox<String> CobLugar_Compra;
+    private javax.swing.JComboBox<String> CobUnidad_medida;
+    private com.github.lgooddatepicker.components.DatePicker DapFecha;
+    private javax.swing.JRadioButton RdbHogar;
+    private javax.swing.JRadioButton RdbPersonal;
+    private javax.swing.JSpinner SpiCantidad;
+    private javax.swing.JSpinner SpiValor_Compra;
+    private javax.swing.JTextField TxfEquivalencia;
+    private javax.swing.JTextField TxfForma_adq;
+    private javax.swing.JTextField TxfNombre_articulo;
+    private javax.swing.JTextField TxfUnidad_Medida;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    // End of variables declaration//GEN-END:variables
+}
