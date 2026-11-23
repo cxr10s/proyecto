@@ -25,11 +25,19 @@ public final class Sesion {
     // Textos fijos que traen los diseños de las ventanas (encuestador y supervisor)
     private static final String[] NOMBRES_DISENO = {
         "MATEO ALEJANDRO RODRIGUEZ MARTINEZ",
-        "JUAN DIEGO GUTIERREZ CASTRO"
+        "JUAN DIEGO GUTIERREZ CASTRO",
+        "LAURA FERNANDA GOMEZ SALAZAR",
+        "ANDRES FELIPE ROJAS CASTELLANOS",
+        "DIANA CAROLINA PEREZ VARGAS",
+        "JUAN SEBASTIAN TORRES MORALES"
     };
     private static final String[] CEDULAS_DISENO = {
         "1015162895",
-        "1026529849"
+        "1026529849",
+        "1095842310",
+        "1098765432",
+        "1097412589",
+        "1096325874"
     };
 
     private static Usuario actual;
